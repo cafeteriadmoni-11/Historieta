@@ -1,1 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>RA — Filosofía Educativa</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+    <!-- MindAR -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        html, body { width: 100%; min-height: 100%; background: #f8fafc; color: #1e293b; }
+        body { height: 100dvh; overflow: hidden; }
+        #app { display: grid; grid-template-columns: minmax(320px, 42%) minmax(0, 58%); width: 100%; height: 100dvh; }
+        #interfaz { min-width: 0; height: 100%; overflow-y: auto; padding: 20px 16px; background: #fff; box-shadow: 2px 0 12px rgba(15,23,42,.10); z-index: 2; }
+        #interfaz h1 { font-size: clamp(18px, 2vw, 25px); line-height: 1.25; text-align: center; margin-bottom: 12px; }
+        #estado { font-size: 14px; line-height: 1.5; margin-bottom: 14px; padding: 10px 12px; border-radius: 10px; background: #f1f5f9; overflow-wrap: anywhere; }
+        .controles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        button { padding: 10px 8px; border: 0; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 700; line-height: 1.25; transition: transform .15s, opacity .15s; }
+        button:hover { transform: translateY(-1px); }
+        button:disabled { opacity: .55; cursor: wait; }
+        #contenedor-escena { position: relative; min-width: 0; min-height: 0; width: 100%; height: 100%; overflow: hidden; background: #111827; }
+        #contenedor-escena:empty::before { content: 'La cámara aparecerá aquí'; position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; color: #cbd5e1; text-align: center; font-size: 18px; }
+        #contenedor-escena a-scene { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
+        #contenedor-escena canvas { display: block; }
+        #contenedor-escena video { object-fit: cover !important; }
+        @media (max-width: 700px) {
+            body { overflow: hidden; }
+            #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 46%) minmax(0, 54%); }
+            #interfaz { height: 100%; padding: 10px; box-shadow: 0 2px 10px rgba(15,23,42,.1); }
+            #interfaz h1 { font-size: 17px; margin-bottom: 7px; }
+            #estado { font-size: 12px; padding: 7px 9px; margin-bottom: 8px; }
+            .controles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+            button { padding: 8px 4px; font-size: 11px; }
+        }
+        @media (max-width: 380px) { .controles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+
+<body>
+
+    <main id="app">
+    <div id="interfaz">
+        <h1>📚 La Filosofía Educativa a través del Tiempo</h1>
+
+        <p id="estado" role="status" aria-live="polite">
+            🔍 Selecciona una imagen para iniciar la cámara.
+        </p>
+
+        <div class="controles">
+            <button data-imagen="1" style="background:#6366f1;color:white;">🏛️ Inicio</button>
+            <button data-imagen="2" style="background:#8b5cf6;color:white;">📜 Platón</button>
+            <button data-imagen="3" style="background:#a855f7;color:white;">📐 Aristóteles</button>
+            <button data-imagen="4" style="background:#d946ef;color:white;">✝️ Fe y Razón</button>
+            <button data-imagen="5" style="background:#ec4899;color:white;">📖 Renacimiento</button>
+            <button data-imagen="6" style="background:#f43f5e;color:white;">🖨️ Imprenta</button>
+            <button data-imagen="7" style="background:#ef4444;color:white;">🌍 Ilustración</button>
+            <button data-imagen="8" style="background:#f97316;color:white;">🌱 Rousseau</button>
+            <button data-imagen="9" style="background:#eab308;color:white;">💡 Locke</button>
+            <button data-imagen="10" style="background:#84cc16;color:white;">📋 Tabla Rasa</button>
+            <button data-imagen="11" style="background:#22c55e;color:white;">🧠 Kant</button>
+            <button data-imagen="12" style="background:#14b8a6;color:white;">🏫 Dewey</button>
+            <button data-imagen="13" style="background:#06b6d4;color:white;">✨ Montessori</button>
+            <button data-imagen="14" style="background:#3b82f6;color:white;">🧩 Piaget</button>
+            <button data-imagen="15" style="background:#6366f1;color:white;">🌟 Etapas</button>
+            <button data-imagen="16" style="background:#8b5cf6;color:white;">🔭 Legado</button>
+            <button data-imagen="17" style="background:#a855f7;color:white;">📚 Hoy</button>
+            <button data-imagen="18" style="background:#d946ef;color:white;">💭 Reflexión</button>
+            <button data-imagen="19" style="background:#ec4899;color:white;">🎓 Conclusión</button>
+            <button data-imagen="20" style="background:#f43f5e;color:white;">👋 Despedida</button>
+            <button id="btnReiniciar" style="background:#e2e8f0;color:#1e293b;">🔄 Reiniciar</button>
+        </div>
+    </div>
+
+    <div id="contenedor-escena"></div>
+    </main>
+
+    <script>
+        // ==========================================
+        // MENSAJES QUE APARECEN EN LA INTERFAZ
+        // ==========================================
+
+        const mensajes = {
+            "1": "🏛️ Todo comienza: la educación como motor del cambio",
+            "2": "📜 Platón: la virtud y la verdad guían la enseñanza",
+            "3": "📐 Aristóteles: formamos el carácter con la práctica",
+            "4": "✝️ Fe y razón se complementan en la búsqueda de sabiduría",
+            "5": "📖 El Renacimiento pone al ser humano en el centro",
+            "6": "🖨️ La imprenta democratiza el saber para siempre",
+            "7": "🌍 La Ilustración confía en la razón y la libertad",
+            "8": "🌱 Rousseau: respetar la naturaleza del niño es enseñar bien",
+            "9": "💡 Locke: todo lo que sabemos viene de la experiencia",
+            "10": "📋 La mente es tabla rasa: la vida la escribe",
+            "11": "🧠 Kant: formar personas autónomas, no solo obedientes",
+            "12": "🏫 Dewey: aprender haciendo, conectado con la vida",
+            "13": "✨ Montessori: libertad, respeto y entorno preparado",
+            "14": "🧩 Piaget: cada edad piensa de manera distinta",
+            "15": "🌟 Respetar etapas = enseñar con sabiduría",
+            "16": "🔭 El pensamiento de ayer construye la educación de hoy",
+            "17": "📚 Aprender del pasado mejora nuestro presente",
+            "18": "💭 Reflexionar sobre educar nos hace mejores maestros",
+            "19": "🎓 Enseñar es encender el futuro, no solo llenar la mente",
+            "20": "👋 ¡Hasta pronto! Tú eres quien lleva estas ideas al futuro"
+        };
+
+        // ==========================================
+        // CONTENIDO DE LAS 20 ESCENAS DE RA
+        // ==========================================
+
+        const escenas = {
+            "1": `
+                <a-text value="EL VIAJE COMIENZA"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#4f46e5"></a-text>
+                <a-text value="Descubriendo la filosofia de la educacion"
+                    position="0 1.05 0" scale="0.32 0.32 0.32"
+                    align="center" color="#818cf8"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.3" radius-outer="0.6"
+                    color="#c7d2fe"></a-ring>
+                <a-text value="La educacion transforma el mundo"
+                    position="0 0.3 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#4338ca"></a-text>
+            `,
+
+            "2": `
+                <a-text value="PLATON"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#7c3aed"></a-text>
+                <a-text value="La educacion del alma y la virtud"
+                    position="0 1.05 0" scale="0.32 0.32 0.32"
+                    align="center" color="#a78bfa"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.3" radius-outer="0.6"
+                    color="#ddd6fe"></a-ring>
+                <a-text value="Aprender nos ayuda a buscar la verdad"
+                    position="0 0.3 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#5b21b6"></a-text>
+            `,
+
+            "3": `
+                <a-text value="ARISTOTELES"
+                    position="0 1.3 0" scale="0.55 0.55 0.55"
+                    align="center" color="#a855f7"></a-text>
+                <a-text value="El habito y la practica forman al ser humano"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#c084fc"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.3" radius-outer="0.6"
+                    color="#f3e8ff"></a-ring>
+                <a-text value="La practica fortalece el aprendizaje"
+                    position="0 0.3 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#7e22ce"></a-text>
+            `,
+
+            "4": `
+                <a-text value="FE Y RAZON"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#c026d3"></a-text>
+                <a-text value="La sabiduria une la fe con el pensamiento"
+                    position="0 1.05 0" scale="0.3 0.3 0.3"
+                    align="center" color="#e879f9"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.3" radius-outer="0.6"
+                    color="#fdf4ff"></a-ring>
+                <a-text value="Pensamiento, creencias y conocimiento"
+                    position="0 0.3 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#86198f"></a-text>
+            `,
+
+            "5": `
+                <a-text value="EL RENACIMIENTO"
+                    position="0 1.3 0" scale="0.55 0.55 0.55"
+                    align="center" color="#db2777"></a-text>
+                <a-text value="El ser humano vuelve al centro del estudio"
+                    position="0 1.05 0" scale="0.3 0.3 0.3"
+                    align="center" color="#f472b6"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.3" radius-outer="0.6"
+                    color="#fdf2f8"></a-ring>
+                <a-text value="Arte, ciencia y pensamiento humanista"
+                    position="0 0.3 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#9d174d"></a-text>
+            `,
+
+            "6": `
+                <a-text value="LA IMPRENTA"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#ea580c"></a-text>
+                <a-text value="El conocimiento llega a mas personas"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#fb923c"></a-text>
+                <a-box position="0 0.65 0"
+                    scale="0.65 0.4 0.12" color="#9a3412"></a-box>
+                <a-box position="0 0.68 0.08"
+                    scale="0.52 0.3 0.04" color="#ffedd5"></a-box>
+                <a-text value="Los libros difundieron nuevas ideas"
+                    position="0 0.3 0.15" scale="0.3 0.3 0.3"
+                    align="center" color="#9a3412"></a-text>
+            `,
+
+            "7": `
+                <a-text value="LA ILUSTRACION"
+                    position="0 1.3 0" scale="0.55 0.55 0.55"
+                    align="center" color="#eab308"></a-text>
+                <a-text value="La razon ilumina el pensamiento"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#facc15"></a-text>
+                <a-sphere position="0 0.65 0"
+                    radius="0.28" color="#fef08a"></a-sphere>
+                <a-text value="Razon, libertad y conocimiento"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#854d0e"></a-text>
+            `,
+
+            "8": `
+                <a-text value="ROUSSEAU"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#22c55e"></a-text>
+                <a-text value="Respetar la naturaleza del nino"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#4ade80"></a-text>
+                <a-sphere position="0 0.65 0"
+                    radius="0.22" color="#86efac"></a-sphere>
+                <a-cylinder position="0 0.35 0"
+                    radius="0.04" height="0.35" color="#15803d"></a-cylinder>
+                <a-text value="Aprender con libertad y experiencia"
+                    position="0 0.12 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#166534"></a-text>
+            `,
+
+            "9": `
+                <a-text value="LOCKE: LA EXPERIENCIA"
+                    position="0 1.3 0" scale="0.5 0.5 0.5"
+                    align="center" color="#0ea5e9"></a-text>
+                <a-text value="El conocimiento nace de lo vivido"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#7dd3fc"></a-text>
+                <a-sphere position="0 0.65 0"
+                    radius="0.25" color="#fde68a"></a-sphere>
+                <a-text value="Observar, experimentar y aprender"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#075985"></a-text>
+            `,
+
+            "10": `
+                <a-text value="TABLA RASA"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#6366f1"></a-text>
+                <a-text value="La experiencia contribuye a formar la mente"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#a5b4fc"></a-text>
+                <a-plane position="0 0.65 0"
+                    scale="0.8 0.48 0.1" color="#eef2ff"></a-plane>
+                <a-text value="Aprender a traves de los sentidos"
+                    position="0 0.65 0.03" scale="0.32 0.32 0.32"
+                    align="center" color="#3730a3"></a-text>
+            `,
+
+            "11": `
+                <a-text value="KANT: AUTONOMIA"
+                    position="0 1.3 0" scale="0.55 0.55 0.55"
+                    align="center" color="#0d9488"></a-text>
+                <a-text value="Pensar por uno mismo"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#2dd4bf"></a-text>
+                <a-sphere position="0 0.65 0"
+                    radius="0.28" color="#99f6e4"></a-sphere>
+                <a-text value="La educacion impulsa la autonomia"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#115e59"></a-text>
+            `,
+
+            "12": `
+                <a-text value="DEWEY: HACER Y APRENDER"
+                    position="0 1.3 0" scale="0.45 0.45 0.45"
+                    align="center" color="#f59e0b"></a-text>
+                <a-text value="Aprender haciendo"
+                    position="0 1.05 0" scale="0.31 0.31 0.31"
+                    align="center" color="#fcd34d"></a-text>
+                <a-box position="0 0.65 0"
+                    scale="0.7 0.42 0.1" color="#fef3c7"></a-box>
+                <a-text value="La escuela se conecta con la vida"
+                    position="0 0.65 0.06" scale="0.32 0.32 0.32"
+                    align="center" color="#92400e"></a-text>
+            `,
+
+            "13": `
+                <a-text value="MONTESSORI"
+                    position="0 1.3 0" scale="0.58 0.58 0.58"
+                    align="center" color="#ec4899"></a-text>
+                <a-text value="Libertad, respeto y entorno preparado"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#f9a8d4"></a-text>
+                <a-box position="-0.35 0.65 0"
+                    scale="0.25 0.25 0.12" color="#fbcfe8"></a-box>
+                <a-box position="0 0.65 0"
+                    scale="0.25 0.35 0.12" color="#f472b6"></a-box>
+                <a-box position="0.35 0.65 0"
+                    scale="0.25 0.2 0.12" color="#be185d"></a-box>
+                <a-text value="Ayudame a hacerlo por mi mismo"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#9d174d"></a-text>
+            `,
+
+            "14": `
+                <a-text value="PIAGET"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#8b5cf6"></a-text>
+                <a-text value="Etapas del desarrollo del pensamiento"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#c4b5fd"></a-text>
+                <a-box position="-0.3 0.65 0"
+                    scale="0.28 0.28 0.12" color="#c4b5fd"></a-box>
+                <a-box position="0 0.65 0"
+                    scale="0.28 0.28 0.12" color="#a78bfa"></a-box>
+                <a-box position="0.3 0.65 0"
+                    scale="0.28 0.28 0.12" color="#7c3aed"></a-box>
+                <a-text value="Cada edad comprende el mundo diferente"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#6d28d9"></a-text>
+            `,
+
+            "15": `
+                <a-text value="RESPETO A LAS ETAPAS"
+                    position="0 1.3 0" scale="0.48 0.48 0.48"
+                    align="center" color="#10b981"></a-text>
+                <a-text value="Adaptar la ensenanza al desarrollo"
+                    position="0 1.05 0" scale="0.3 0.3 0.3"
+                    align="center" color="#6ee7b7"></a-text>
+                <a-cylinder position="-0.35 0.5 0"
+                    radius="0.12" height="0.25" color="#a7f3d0"></a-cylinder>
+                <a-cylinder position="0 0.6 0"
+                    radius="0.12" height="0.45" color="#34d399"></a-cylinder>
+                <a-cylinder position="0.35 0.7 0"
+                    radius="0.12" height="0.65" color="#059669"></a-cylinder>
+                <a-text value="Cada nino tiene su propio ritmo"
+                    position="0 0.15 0.03" scale="0.29 0.29 0.29"
+                    align="center" color="#047857"></a-text>
+            `,
+
+            "16": `
+                <a-text value="EL LEGADO PERDURA"
+                    position="0 1.3 0" scale="0.5 0.5 0.5"
+                    align="center" color="#3b82f6"></a-text>
+                <a-text value="Las grandes ideas transforman la educacion"
+                    position="0 1.05 0" scale="0.28 0.28 0.28"
+                    align="center" color="#93c5fd"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.25" radius-outer="0.4"
+                    color="#bfdbfe"></a-ring>
+                <a-text value="Las ideas del pasado siguen inspirando"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#1d4ed8"></a-text>
+            `,
+
+            "17": `
+                <a-text value="LA EDUCACION DE HOY"
+                    position="0 1.3 0" scale="0.5 0.5 0.5"
+                    align="center" color="#6366f1"></a-text>
+                <a-text value="Aprender del pasado mejora el presente"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#a5b4fc"></a-text>
+                <a-box position="0 0.65 0"
+                    scale="0.6 0.38 0.12" color="#c7d2fe"></a-box>
+                <a-box position="0.03 0.67 0.07"
+                    scale="0.5 0.3 0.03" color="#eef2ff"></a-box>
+                <a-text value="Innovacion, inclusion y aprendizaje"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#4338ca"></a-text>
+            `,
+
+            "18": `
+                <a-text value="REFLEXION FINAL"
+                    position="0 1.3 0" scale="0.55 0.55 0.55"
+                    align="center" color="#d946ef"></a-text>
+                <a-text value="Pensar sobre educar es educar mejor"
+                    position="0 1.05 0" scale="0.29 0.29 0.29"
+                    align="center" color="#e9d5ff"></a-text>
+                <a-sphere position="0 0.65 0"
+                    radius="0.25" color="#f5d0fe"></a-sphere>
+                <a-text value="Que tipo de educacion queremos construir?"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#a21caf"></a-text>
+            `,
+
+            "19": `
+                <a-text value="CONCLUSION"
+                    position="0 1.3 0" scale="0.6 0.6 0.6"
+                    align="center" color="#f43f5e"></a-text>
+                <a-text value="La educacion transforma a las personas"
+                    position="0 1.05 0" scale="0.3 0.3 0.3"
+                    align="center" color="#fecdd3"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.22" radius-outer="0.4"
+                    color="#fda4af"></a-ring>
+                <a-text value="Ensenar tambien es inspirar"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#be123c"></a-text>
+            `,
+
+            "20": `
+                <a-text value="GRACIAS POR ACOMPANARNOS"
+                    position="0 1.3 0" scale="0.43 0.43 0.43"
+                    align="center" color="#0891b2"></a-text>
+                <a-text value="El viaje continua contigo"
+                    position="0 1.05 0" scale="0.32 0.32 0.32"
+                    align="center" color="#67e8f9"></a-text>
+                <a-ring position="0 0.65 0"
+                    radius-inner="0.25" radius-outer="0.42"
+                    color="#cffafe"></a-ring>
+                <a-text value="Las ideas no terminan aqui"
+                    position="0 0.25 0.03" scale="0.3 0.3 0.3"
+                    align="center" color="#0e7490"></a-text>
+                <a-text value="Tu las llevas al futuro"
+                    position="0 -0.05 0.03" scale="0.27 0.27 0.27"
+                    align="center" color="#155e75"></a-text>
+            `
+        };
+
+        // ==========================================
+        // ELEMENTOS DE LA INTERFAZ Y CONTROL DE ESCENAS
+        // ==========================================
+        const contenedorEscena = document.getElementById("contenedor-escena");
+        const estado = document.getElementById("estado");
+        const botonReiniciar = document.getElementById("btnReiniciar");
+        const botonesImagen = document.querySelectorAll("button[data-imagen]");
+
+        let escenaActual = null;
+        let cargando = false;
+        let escenaSeleccionada = null;
+
+        function mostrarEstado(texto, color = "#475569") {
+            estado.textContent = texto;
+            estado.style.color = color;
+        }
+
+        function bloquearBotones(bloquear) {
+            botonesImagen.forEach(boton => boton.disabled = bloquear);
+            botonReiniciar.disabled = bloquear;
+        }
+
+        async function detenerEscena() {
+            const anterior = escenaActual;
+            escenaActual = null;
+            if (!anterior) return;
+
+            try {
+                const sistema = anterior.systems && anterior.systems["mindar-image-system"];
+                if (sistema && typeof sistema.stop === "function") {
+                    await sistema.stop();
+                }
+            } catch (error) {
+                console.warn("MindAR no se detuvo de forma normal:", error);
+            }
+
+            if (anterior.parentNode) anterior.parentNode.removeChild(anterior);
+        }
+
+        async function cargarImagen(id) {
+            if (cargando) return;
+            if (!mensajes[id] || !escenas[id]) {
+                mostrarEstado("❌ No se encontró el contenido de esta escena.", "#dc2626");
+                return;
+            }
+            if (!window.isSecureContext) {
+                mostrarEstado("❌ Abre esta página con HTTPS para usar la cámara.", "#dc2626");
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                mostrarEstado("❌ Este navegador no permite acceder a la cámara. Prueba con Chrome actualizado.", "#dc2626");
+                return;
+            }
+
+            cargando = true;
+            escenaSeleccionada = id;
+            bloquearBotones(true);
+            mostrarEstado("⏳ Preparando la escena " + id + " y activando la cámara…", "#2563eb");
+
+            try {
+                // Detener la escena anterior antes de crear otra para evitar dos cámaras activas.
+                await detenerEscena();
+                contenedorEscena.innerHTML = "";
+
+                const rutaMind = `./imagen1/imagen${id}/Imagen${id}.mind`;
+                const escena = document.createElement("a-scene");
+                escena.setAttribute("mindar-image", `imageTargetSrc: ${rutaMind}; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001`);
+                escena.setAttribute("embedded", "");
+                escena.setAttribute("color-space", "sRGB");
+                escena.setAttribute("renderer", "colorManagement: true; antialias: false; physicallyCorrectLights: false");
+                escena.setAttribute("vr-mode-ui", "enabled: false");
+                escena.setAttribute("device-orientation-permission-ui", "enabled: false");
+
+                const camara = document.createElement("a-camera");
+                camara.setAttribute("position", "0 0 0");
+                camara.setAttribute("look-controls", "enabled: false");
+                camara.setAttribute("wasd-controls", "enabled: false");
+                escena.appendChild(camara);
+
+                const objetivo = document.createElement("a-entity");
+                objetivo.setAttribute("mindar-image-target", "targetIndex: 0");
+                objetivo.innerHTML = escenas[id];
+                escena.appendChild(objetivo);
+
+                objetivo.addEventListener("targetFound", () => {
+                    if (escenaSeleccionada !== id) return;
+                    mostrarEstado("✅ " + mensajes[id], "#059669");
+                });
+                objetivo.addEventListener("targetLost", () => {
+                    if (escenaSeleccionada !== id) return;
+                    mostrarEstado("🔍 Imagen fuera de cámara. Vuelve a enfocarla.", "#b45309");
+                });
+                escena.addEventListener("arReady", () => {
+                    if (escenaSeleccionada !== id) return;
+                    mostrarEstado("📷 Cámara lista. Enfoca la imagen de la opción seleccionada.", "#2563eb");
+                });
+                escena.addEventListener("arError", event => {
+                    console.error("Error de MindAR:", event.detail || event);
+                    if (escenaSeleccionada !== id) return;
+                    mostrarEstado(`❌ No se pudo iniciar la cámara o cargar ${rutaMind}. Comprueba que el archivo exista y que el permiso de cámara esté habilitado.`, "#dc2626");
+                });
+
+                escenaActual = escena;
+                contenedorEscena.appendChild(escena);
+            } catch (error) {
+                console.error("Error al cargar la escena:", error);
+                mostrarEstado("❌ Ocurrió un error al iniciar la realidad aumentada. Revisa la consola del navegador.", "#dc2626");
+            } finally {
+                cargando = false;
+                bloquearBotones(false);
+            }
+        }
+
+        botonesImagen.forEach(boton => {
+            boton.addEventListener("click", () => cargarImagen(boton.dataset.imagen));
+        });
+
+        botonReiniciar.addEventListener("click", async () => {
+            if (cargando) return;
+            cargando = true;
+            bloquearBotones(true);
+            escenaSeleccionada = null;
+            mostrarEstado("🔄 Cerrando la cámara…", "#475569");
+            try {
+                await detenerEscena();
+                contenedorEscena.innerHTML = "";
+                mostrarEstado("🔍 Selecciona una imagen para iniciar la cámara.");
+            } catch (error) {
+                console.error("Error al reiniciar:", error);
+                mostrarEstado("❌ No se pudo reiniciar. Recarga la página.", "#dc2626");
+            } finally {
+                cargando = false;
+                bloquearBotones(false);
+            }
+        });
+    </script>
+
+</body>
+</html>
