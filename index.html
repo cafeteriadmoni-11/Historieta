@@ -26,9 +26,39 @@
         button:disabled { opacity: .55; cursor: wait; }
         #contenedor-escena { position: relative; min-width: 0; min-height: 0; width: 100%; height: 100%; overflow: hidden; background: #111827; }
         #contenedor-escena:empty::before { content: 'La cámara aparecerá aquí'; position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; color: #cbd5e1; text-align: center; font-size: 18px; }
-        #contenedor-escena a-scene { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
-        #contenedor-escena canvas { display: block; }
-        #contenedor-escena video { object-fit: cover !important; }
+        #contenedor-escena a-scene {
+            position: absolute !important;
+            inset: 0 !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: transparent !important;
+            z-index: 1;
+        }
+        /* El video de MindAR debe quedar visible dentro del panel de cámara. */
+        #contenedor-escena video,
+        #contenedor-escena a-scene video {
+            position: absolute !important;
+            inset: 0 !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 0 !important;
+            background: transparent !important;
+        }
+        #contenedor-escena canvas,
+        #contenedor-escena a-scene canvas {
+            position: absolute !important;
+            inset: 0 !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: transparent !important;
+            z-index: 1 !important;
+        }
         @media (max-width: 700px) {
             body { overflow: hidden; }
             #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 46%) minmax(0, 54%); }
@@ -492,9 +522,14 @@
                 escena.setAttribute("mindar-image", `imageTargetSrc: ${rutaMind}; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001`);
                 escena.setAttribute("embedded", "");
                 escena.setAttribute("color-space", "sRGB");
-                escena.setAttribute("renderer", "colorManagement: true; antialias: false; physicallyCorrectLights: false");
+                escena.setAttribute("renderer", "colorManagement: true; antialias: false; physicallyCorrectLights: false; alpha: true; logarithmicDepthBuffer: false");
                 escena.setAttribute("vr-mode-ui", "enabled: false");
                 escena.setAttribute("device-orientation-permission-ui", "enabled: false");
+                escena.style.background = "transparent";
+                escena.style.position = "absolute";
+                escena.style.inset = "0";
+                escena.style.width = "100%";
+                escena.style.height = "100%";
 
                 const camara = document.createElement("a-camera");
                 camara.setAttribute("position", "0 0 0");
@@ -527,6 +562,23 @@
 
                 escenaActual = escena;
                 contenedorEscena.appendChild(escena);
+
+                // Fuerza a A-Frame a medir el tamaño real del panel después de insertarlo.
+                requestAnimationFrame(() => {
+                    if (escena.renderer && typeof escena.resize === "function") {
+                        escena.resize();
+                    }
+                    const video = contenedorEscena.querySelector("video");
+                    if (video) {
+                        video.style.position = "absolute";
+                        video.style.inset = "0";
+                        video.style.width = "100%";
+                        video.style.height = "100%";
+                        video.style.objectFit = "cover";
+                        video.style.opacity = "1";
+                        video.style.visibility = "visible";
+                    }
+                });
             } catch (error) {
                 console.error("Error al cargar la escena:", error);
                 mostrarEstado("❌ Ocurrió un error al iniciar la realidad aumentada. Revisa la consola del navegador.", "#dc2626");
