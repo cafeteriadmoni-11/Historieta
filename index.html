@@ -487,7 +487,7 @@
                 await detenerEscena();
                 contenedorEscena.innerHTML = "";
 
-                const rutaMind = `./imagen1/imagen${id}/Imagen${id}.mind`;
+                const rutaMind = `./imagen1/imagen${id}/imagen${id}.mind`;
                 const escena = document.createElement("a-scene");
                 escena.setAttribute("mindar-image", `imageTargetSrc: ${rutaMind}; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001`);
                 escena.setAttribute("embedded", "");
