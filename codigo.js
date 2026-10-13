@@ -14,26 +14,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================
 
     const configuraciones = {
-        1:  { nombre: "Evolución de la educación", archivo: "./imagen1/imagen1/Imagen1.mind", plantilla: "contenidoImagen1" },
-        2:  { nombre: "Reflexión educativa", archivo: "./imagen1/imagen2/Imagen2.mind", plantilla: "contenidoImagen2" },
-        3:  { nombre: "Diálogo en el tiempo", archivo: "./imagen1/imagen3/Imagen3.mind", plantilla: "contenidoImagen3" },
-        4:  { nombre: "Fe y razón", archivo: "./imagen1/imagen4/Imagen4.mind", plantilla: "contenidoImagen4" },
-        5:  { nombre: "Renacimiento", archivo: "./imagen1/imagen5/Imagen5.mind", plantilla: "contenidoImagen5" },
-        6:  { nombre: "La imprenta", archivo: "./imagen1/imagen6/Imagen6.mind", plantilla: "contenidoImagen6" },
-        7:  { nombre: "La Ilustración", archivo: "./imagen1/imagen7/Imagen7.mind", plantilla: "contenidoImagen7" },
-        8:  { nombre: "Rousseau", archivo: "./imagen1/imagen8/Imagen8.mind", plantilla: "contenidoImagen8" },
-        9:  { nombre: "Locke", archivo: "./imagen1/imagen9/Imagen9.mind", plantilla: "contenidoImagen9" },
-        10: { nombre: "Tabla rasa", archivo: "./imagen1/imagen10/Imagen10.mind", plantilla: "contenidoImagen10" },
-        11: { nombre: "Kant", archivo: "./imagen1/imagen11/Imagen11.mind", plantilla: "contenidoImagen11" },
-        12: { nombre: "Dewey", archivo: "./imagen1/imagen12/Imagen12.mind", plantilla: "contenidoImagen12" },
-        13: { nombre: "Montessori", archivo: "./imagen1/imagen13/Imagen13.mind", plantilla: "contenidoImagen13" },
-        14: { nombre: "Piaget", archivo: "./imagen1/imagen14/Imagen14.mind", plantilla: "contenidoImagen14" },
-        15: { nombre: "Etapas del desarrollo", archivo: "./imagen1/imagen15/Imagen15.mind", plantilla: "contenidoImagen15" },
-        16: { nombre: "Legado educativo", archivo: "./imagen1/imagen16/Imagen16.mind", plantilla: "contenidoImagen16" },
-        17: { nombre: "Educación actual", archivo: "./imagen1/imagen17/Imagen17.mind", plantilla: "contenidoImagen17" },
-        18: { nombre: "Reflexión final", archivo: "./imagen1/imagen18/Imagen18.mind", plantilla: "contenidoImagen18" },
-        19: { nombre: "Conclusión", archivo: "./imagen1/imagen19/Imagen19.mind", plantilla: "contenidoImagen19" },
-        20: { nombre: "Despedida", archivo: "./imagen1/imagen20/Imagen20.mind", plantilla: "contenidoImagen20" }
+        1:  { nombre: "Evolución de la educación", archivo: "./imagen1/imagen1/imagen1.mind", plantilla: "contenidoImagen1" },
+        2:  { nombre: "Reflexión educativa", archivo: "./imagen1/imagen2/imagen2.mind", plantilla: "contenidoImagen2" },
+        3:  { nombre: "Diálogo en el tiempo", archivo: "./imagen1/imagen3/imagen3.mind", plantilla: "contenidoImagen3" },
+        4:  { nombre: "Fe y razón", archivo: "./imagen1/imagen4/imagen4.mind", plantilla: "contenidoImagen4" },
+        5:  { nombre: "Renacimiento", archivo: "./imagen1/imagen5/imagen5.mind", plantilla: "contenidoImagen5" },
+        6:  { nombre: "La imprenta", archivo: "./imagen1/imagen6/imagen6.mind", plantilla: "contenidoImagen6" },
+        7:  { nombre: "La Ilustración", archivo: "./imagen1/imagen7/imagen7.mind", plantilla: "contenidoImagen7" },
+        8:  { nombre: "Rousseau", archivo: "./imagen1/imagen8/imagen8.mind", plantilla: "contenidoImagen8" },
+        9:  { nombre: "Locke", archivo: "./imagen1/imagen9/imagen9.mind", plantilla: "contenidoImagen9" },
+        10: { nombre: "Tabla rasa", archivo: "./imagen1/imagen10/imagen10.mind", plantilla: "contenidoImagen10" },
+        11: { nombre: "Kant", archivo: "./imagen1/imagen11/imagen11.mind", plantilla: "contenidoImagen11" },
+        12: { nombre: "Dewey", archivo: "./imagen1/imagen12/imagen12.mind", plantilla: "contenidoImagen12" },
+        13: { nombre: "Montessori", archivo: "./imagen1/imagen13/imagen13.mind", plantilla: "contenidoImagen13" },
+        14: { nombre: "Piaget", archivo: "./imagen1/imagen14/imagen14.mind", plantilla: "contenidoImagen14" },
+        15: { nombre: "Etapas del desarrollo", archivo: "./imagen1/imagen15/imagen15.mind", plantilla: "contenidoImagen15" },
+        16: { nombre: "Legado educativo", archivo: "./imagen1/imagen16/imagen16.mind", plantilla: "contenidoImagen16" },
+        17: { nombre: "Educación actual", archivo: "./imagen1/imagen17/imagen17.mind", plantilla: "contenidoImagen17" },
+        18: { nombre: "Reflexión final", archivo: "./imagen1/imagen18/imagen18.mind", plantilla: "contenidoImagen18" },
+        19: { nombre: "Conclusión", archivo: "./imagen1/imagen19/imagen19.mind", plantilla: "contenidoImagen19" },
+        20: { nombre: "Despedida", archivo: "./imagen1/imagen20/imagen20.mind", plantilla: "contenidoImagen20" }
     };
 
     // Contenido básico para las imágenes que no tengan plantilla.
